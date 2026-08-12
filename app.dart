@@ -162,7 +162,7 @@ class _JourneyScreenState extends State<JourneyScreen>
   final List<JourneyPageData> _pages = [
     JourneyPageData(
       id: 'step_1',
-      imagePath: 'assets/download_1.jpg',
+      imagePath: 'assets/download_1.png',
       characterPath: 'assets/character_1.png',
       title: 'بداية الطريق العاطر',
       subtitle: 'المحطة الأولى',
@@ -177,7 +177,7 @@ class _JourneyScreenState extends State<JourneyScreen>
     ),
     JourneyPageData(
       id: 'step_2',
-      imagePath: 'assets/download_4.jpg',
+      imagePath: 'assets/download_4.png',
       characterPath: 'assets/character_2.png',
       title: 'أفق الساحل والغروب',
       subtitle: 'المحطة الثانية',
@@ -192,7 +192,7 @@ class _JourneyScreenState extends State<JourneyScreen>
     ),
     JourneyPageData(
       id: 'step_3',
-      imagePath: 'assets/download_5.jpg',
+      imagePath: 'assets/download_5.png',
       characterPath: 'assets/character_3.png',
       title: 'ليلة الأضواء والبهجة',
       subtitle: 'المحطة الثالثة',
@@ -207,7 +207,7 @@ class _JourneyScreenState extends State<JourneyScreen>
     ),
     JourneyPageData(
       id: 'step_4',
-      imagePath: 'assets/download_2.jpg',
+      imagePath: 'assets/download_2.png',
       characterPath: 'assets/character_4.png',
       title: 'ممر الفوانيس المضاءة',
       subtitle: 'المحطة الرابعة',
@@ -221,7 +221,7 @@ class _JourneyScreenState extends State<JourneyScreen>
     ),
     JourneyPageData(
       id: 'step_5',
-      imagePath: 'assets/download_3.jpg',
+      imagePath: 'assets/download_3.png',
       characterPath: 'assets/character_5.png',
       title: 'مرسى الذكريات السعيدة',
       subtitle: 'المحطة الأخيرة',
