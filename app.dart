@@ -109,6 +109,7 @@ class _JourneyScreenState extends State<JourneyScreen>
   int _currentIndex = 0;
   bool _isPlayingMusic = false;
   bool _isCinematicMode = false;
+  bool _showCard = false;
   final Set<int> _completedSteps = {0};
   final Map<int, String> _userNotes = {};
 
@@ -135,7 +136,7 @@ class _JourneyScreenState extends State<JourneyScreen>
         title: 'المستكشف الشغوف',
         description: 'وصلت إلى المحطة الأولى وبدأت رحلتك العاطرة.',
         icon: Icons.explore_rounded,
-        isUnlocked: true),
+        isUnlocked: false),
     Achievement(
         title: 'عاشق الأفق والغروب',
         description: 'وصلت إلى المحطة الثانية وتأملت سحر الساحل.',
@@ -274,6 +275,21 @@ class _JourneyScreenState extends State<JourneyScreen>
 
     _touchAnimationController.repeat();
     _entranceController.forward();
+    _scheduleCardReveal();
+  }
+
+  // يؤخر ظهور صندوق الرسالة لحد ما الصورة تظهر الأول، وبعدها يظهر بانيميشن
+  void _scheduleCardReveal() {
+    setState(() {
+      _showCard = false;
+    });
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (mounted) {
+        setState(() {
+          _showCard = true;
+        });
+      }
+    });
   }
 
   void _updateBubbles() {
@@ -454,9 +470,7 @@ class _JourneyScreenState extends State<JourneyScreen>
       _entranceController.forward();
     });
 
-    Future.delayed(const Duration(milliseconds: 400), () {
-      _unlockAchievementForPage(newIndex);
-    });
+    _scheduleCardReveal();
 
     if (newIndex == _pages.length - 1) {
       _confettiController.reset();
@@ -628,10 +642,12 @@ class _JourneyScreenState extends State<JourneyScreen>
                         child: child,
                       ),
                     ),
-                    child: _buildStoryCard(
-                      currentPage,
-                      key: ValueKey<String>(currentPage.id),
-                    ),
+                    child: _showCard
+                        ? _buildStoryCard(
+                            currentPage,
+                            key: ValueKey<String>('card_${currentPage.id}'),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('card_empty')),
                   ),
                 ),
               ),
@@ -962,6 +978,36 @@ class _JourneyScreenState extends State<JourneyScreen>
                   ),
                 ),
                 const SizedBox(height: 15),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _brownMedium.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Text('اللقب',
+                            style: TextStyle(
+                                color: _goldWarm,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text('الحالة',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: _goldWarm,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
                 Expanded(
                   child: ListView.builder(
                     itemCount: _achievements.length,
@@ -1233,6 +1279,60 @@ class _JourneyScreenState extends State<JourneyScreen>
     );
   }
 
+  // زرار يدوي لإظهار لقب المحطة الحالية بدل ما يظهر تلقائي
+  Widget _buildTitleRevealButton(JourneyPageData page) {
+    final achievement = _achievements[_currentIndex];
+    final isUnlocked = achievement.isUnlocked;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap:
+            isUnlocked ? null : () => _unlockAchievementForPage(_currentIndex),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: isUnlocked
+                ? page.themeAccent.withValues(alpha: 0.16)
+                : page.themeAccent.withValues(alpha: 0.32),
+            border: Border.all(
+              color: page.themeAccent.withValues(alpha: 0.75),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isUnlocked
+                    ? Icons.emoji_events_rounded
+                    : Icons.lock_open_rounded,
+                size: 14,
+                color: page.themeAccent,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  isUnlocked
+                      ? 'لقبك: ${achievement.title}'
+                      : 'إظهار لقب المحطة',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: page.themeAccent,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStoryCard(JourneyPageData page, {Key? key}) {
     return Material(
       key: key,
@@ -1298,9 +1398,14 @@ class _JourneyScreenState extends State<JourneyScreen>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        page.message,
+                      TypewriterText(
+                        key: ValueKey<String>('typewriter_${page.id}'),
+                        text: page.message,
                         textAlign: TextAlign.center,
+                        duration: Duration(
+                          milliseconds:
+                              (page.message.length * 45).clamp(900, 3000),
+                        ),
                         style: const TextStyle(
                           color: Color(0xFFF5F5F5),
                           fontSize: 12,
@@ -1325,6 +1430,8 @@ class _JourneyScreenState extends State<JourneyScreen>
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      _buildTitleRevealButton(page),
                     ],
                   ),
                 ),
@@ -1490,6 +1597,89 @@ class _JourneyScreenState extends State<JourneyScreen>
         size: 55,
         color: page.themeAccent,
       ),
+    );
+  }
+}
+
+// ويدجت بتظهر النص حرف بحرف بانيميشن متتابع (تأثير الآلة الكاتبة)
+class TypewriterText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+  final TextAlign textAlign;
+  final Duration duration;
+  final VoidCallback? onComplete;
+
+  const TypewriterText({
+    super.key,
+    required this.text,
+    required this.style,
+    this.textAlign = TextAlign.center,
+    this.duration = const Duration(milliseconds: 1600),
+    this.onComplete,
+  });
+
+  @override
+  State<TypewriterText> createState() => _TypewriterTextState();
+}
+
+class _TypewriterTextState extends State<TypewriterText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<int> _charCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    _charCount = _buildCharAnimation();
+    if (widget.onComplete != null) {
+      _controller.addStatusListener(_handleStatus);
+    }
+    _controller.forward();
+  }
+
+  Animation<int> _buildCharAnimation() {
+    return StepTween(begin: 0, end: widget.text.length).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+  }
+
+  void _handleStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      widget.onComplete?.call();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TypewriterText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _controller.duration = widget.duration;
+      setState(() {
+        _charCount = _buildCharAnimation();
+      });
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final count = _charCount.value.clamp(0, widget.text.length);
+        return Text(
+          widget.text.substring(0, count),
+          textAlign: widget.textAlign,
+          style: widget.style,
+        );
+      },
     );
   }
 }
