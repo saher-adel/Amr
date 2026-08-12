@@ -21,11 +21,11 @@ flutter:
 
   assets:
     - assets/background_music.mp3
-    - assets/download_1.jpg
-    - assets/download_2.jpg
-    - assets/download_3.jpg
-    - assets/download_4.jpg
-    - assets/download_5.jpg
+    - assets/download_1.png
+    - assets/download_2.png
+    - assets/download_3.png
+    - assets/download_4.png
+    - assets/download_5.png
     - assets/character_1.png
     - assets/character_2.png
     - assets/character_3.png
